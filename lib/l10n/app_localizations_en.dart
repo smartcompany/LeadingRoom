@@ -66,7 +66,50 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loading => 'Loading…';
 
   @override
-  String get emptySignals => 'No signals yet';
+  String get emptySignals => 'No analyses yet';
+
+  @override
+  String get recommendSection => 'Buy & sell picks';
+
+  @override
+  String get allSymbolsSection => 'All symbols';
+
+  @override
+  String get noRecommendations => 'No buy or sell picks right now';
+
+  @override
+  String get backtestReturn => 'Backtest return';
+
+  @override
+  String get backtestWinRate => 'Win rate';
+
+  @override
+  String get backtestTrades => 'Trades';
+
+  @override
+  String get tradeHistory => 'Trade history';
+
+  @override
+  String get tradeHistoryDetail => 'Details';
+
+  @override
+  String get tradeHistoryDetailTitle => 'Signal explained';
+
+  @override
+  String get noTradeHistory => 'No simulated trades';
+
+  @override
+  String get backtestOpen => 'Open';
+
+  @override
+  String get backtestNote =>
+      'Simulated from technical signals on this chart range. Qualitative/live results may differ.';
+
+  @override
+  String get hold => 'Hold';
+
+  @override
+  String get scoreLabel => 'Score';
 
   @override
   String get emptySymbols => 'No symbols';
@@ -125,4 +168,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get interval1y => 'Year';
+
+  @override
+  String get indicatorMa => 'MA';
+
+  @override
+  String get indicatorRsi => 'RSI';
+
+  @override
+  String get indicatorMacd => 'MACD';
+
+  @override
+  String get indicatorVolume => 'Volume';
+
+  @override
+  String get indicatorsTitle => 'Indicators';
 }

@@ -42,6 +42,16 @@ class ApiService {
     return list.cast<Map<String, dynamic>>().map(SignalItem.fromJson).toList();
   }
 
+  Future<List<AnalysisItem>> fetchLatestAnalyses() async {
+    final res = await http.get(_uri('/api/analyses/latest'));
+    if (res.statusCode != 200) {
+      throw StateError('analyses failed: ${res.statusCode}');
+    }
+    final body = jsonDecode(res.body) as Map<String, dynamic>;
+    final list = body['analyses'] as List<dynamic>;
+    return list.cast<Map<String, dynamic>>().map(AnalysisItem.fromJson).toList();
+  }
+
   Future<List<CandlePoint>> fetchCandles(
     String symbolId, {
     String timeframe = '1d',
@@ -72,6 +82,21 @@ class ApiService {
         .cast<Map<String, dynamic>>()
         .map(PaperTradeMarker.fromJson)
         .toList();
+  }
+
+  Future<BacktestResult> fetchBacktest(
+    String symbolId, {
+    String timeframe = '1d',
+    int? limit,
+  }) async {
+    final query = <String, String>{'timeframe': timeframe};
+    if (limit != null) query['limit'] = '$limit';
+    final res = await http.get(_uri('/api/backtest/$symbolId', query));
+    if (res.statusCode != 200) {
+      throw StateError('backtest failed: ${res.statusCode}');
+    }
+    final body = jsonDecode(res.body) as Map<String, dynamic>;
+    return BacktestResult.fromJson(body);
   }
 
   Future<PerformanceSummary> fetchPerformance() async {

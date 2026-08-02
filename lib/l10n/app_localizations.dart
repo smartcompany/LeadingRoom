@@ -215,8 +215,92 @@ abstract class AppLocalizations {
   /// No description provided for @emptySignals.
   ///
   /// In ko, this message translates to:
-  /// **'아직 시그널이 없습니다'**
+  /// **'아직 분석 결과가 없습니다'**
   String get emptySignals;
+
+  /// No description provided for @recommendSection.
+  ///
+  /// In ko, this message translates to:
+  /// **'매수·매도 추천'**
+  String get recommendSection;
+
+  /// No description provided for @allSymbolsSection.
+  ///
+  /// In ko, this message translates to:
+  /// **'전체 종목'**
+  String get allSymbolsSection;
+
+  /// No description provided for @noRecommendations.
+  ///
+  /// In ko, this message translates to:
+  /// **'지금 매수·매도 추천은 없습니다'**
+  String get noRecommendations;
+
+  /// No description provided for @backtestReturn.
+  ///
+  /// In ko, this message translates to:
+  /// **'백테스트 수익률'**
+  String get backtestReturn;
+
+  /// No description provided for @backtestWinRate.
+  ///
+  /// In ko, this message translates to:
+  /// **'승률'**
+  String get backtestWinRate;
+
+  /// No description provided for @backtestTrades.
+  ///
+  /// In ko, this message translates to:
+  /// **'매매'**
+  String get backtestTrades;
+
+  /// No description provided for @tradeHistory.
+  ///
+  /// In ko, this message translates to:
+  /// **'매매 히스토리'**
+  String get tradeHistory;
+
+  /// No description provided for @tradeHistoryDetail.
+  ///
+  /// In ko, this message translates to:
+  /// **'자세히'**
+  String get tradeHistoryDetail;
+
+  /// No description provided for @tradeHistoryDetailTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'시그널 상세 설명'**
+  String get tradeHistoryDetailTitle;
+
+  /// No description provided for @noTradeHistory.
+  ///
+  /// In ko, this message translates to:
+  /// **'시뮬레이션 매매가 없습니다'**
+  String get noTradeHistory;
+
+  /// No description provided for @backtestOpen.
+  ///
+  /// In ko, this message translates to:
+  /// **'보유 중'**
+  String get backtestOpen;
+
+  /// No description provided for @backtestNote.
+  ///
+  /// In ko, this message translates to:
+  /// **'차트 구간 기술 시그널 기준 시뮬레이션입니다. 정성·실거래와 다를 수 있습니다.'**
+  String get backtestNote;
+
+  /// No description provided for @hold.
+  ///
+  /// In ko, this message translates to:
+  /// **'관망'**
+  String get hold;
+
+  /// No description provided for @scoreLabel.
+  ///
+  /// In ko, this message translates to:
+  /// **'점수'**
+  String get scoreLabel;
 
   /// No description provided for @emptySymbols.
   ///
@@ -331,6 +415,36 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'년'**
   String get interval1y;
+
+  /// No description provided for @indicatorMa.
+  ///
+  /// In ko, this message translates to:
+  /// **'이평'**
+  String get indicatorMa;
+
+  /// No description provided for @indicatorRsi.
+  ///
+  /// In ko, this message translates to:
+  /// **'RSI'**
+  String get indicatorRsi;
+
+  /// No description provided for @indicatorMacd.
+  ///
+  /// In ko, this message translates to:
+  /// **'MACD'**
+  String get indicatorMacd;
+
+  /// No description provided for @indicatorVolume.
+  ///
+  /// In ko, this message translates to:
+  /// **'거래량'**
+  String get indicatorVolume;
+
+  /// No description provided for @indicatorsTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'지표'**
+  String get indicatorsTitle;
 }
 
 class _AppLocalizationsDelegate

@@ -66,7 +66,49 @@ class AppLocalizationsKo extends AppLocalizations {
   String get loading => '불러오는 중…';
 
   @override
-  String get emptySignals => '아직 시그널이 없습니다';
+  String get emptySignals => '아직 분석 결과가 없습니다';
+
+  @override
+  String get recommendSection => '매수·매도 추천';
+
+  @override
+  String get allSymbolsSection => '전체 종목';
+
+  @override
+  String get noRecommendations => '지금 매수·매도 추천은 없습니다';
+
+  @override
+  String get backtestReturn => '백테스트 수익률';
+
+  @override
+  String get backtestWinRate => '승률';
+
+  @override
+  String get backtestTrades => '매매';
+
+  @override
+  String get tradeHistory => '매매 히스토리';
+
+  @override
+  String get tradeHistoryDetail => '자세히';
+
+  @override
+  String get tradeHistoryDetailTitle => '시그널 상세 설명';
+
+  @override
+  String get noTradeHistory => '시뮬레이션 매매가 없습니다';
+
+  @override
+  String get backtestOpen => '보유 중';
+
+  @override
+  String get backtestNote => '차트 구간 기술 시그널 기준 시뮬레이션입니다. 정성·실거래와 다를 수 있습니다.';
+
+  @override
+  String get hold => '관망';
+
+  @override
+  String get scoreLabel => '점수';
 
   @override
   String get emptySymbols => '종목이 없습니다';
@@ -124,4 +166,19 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get interval1y => '년';
+
+  @override
+  String get indicatorMa => '이평';
+
+  @override
+  String get indicatorRsi => 'RSI';
+
+  @override
+  String get indicatorMacd => 'MACD';
+
+  @override
+  String get indicatorVolume => '거래량';
+
+  @override
+  String get indicatorsTitle => '지표';
 }

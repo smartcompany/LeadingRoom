@@ -15,37 +15,157 @@ class SignalsScreen extends StatefulWidget {
 }
 
 class _SignalsScreenState extends State<SignalsScreen> {
-  late Future<List<SignalItem>> _future;
+  late Future<List<AnalysisItem>> _future;
 
   @override
   void initState() {
     super.initState();
-    _future = ApiService.shared.fetchSignals();
+    _future = ApiService.shared.fetchLatestAnalyses();
   }
 
-  bool _canView(SignalItem s) {
-    // MVP: 전 종목 개방 (구독 게이트는 이후 재적용)
-    return true;
+  String _sideLabel(AppLocalizations l10n, String side) {
+    switch (side) {
+      case 'buy':
+        return l10n.buy;
+      case 'sell':
+        return l10n.sell;
+      default:
+        return l10n.hold;
+    }
+  }
+
+  Color _sideBg(String side) {
+    switch (side) {
+      case 'buy':
+        return Colors.green.shade100;
+      case 'sell':
+        return Colors.red.shade100;
+      default:
+        return Colors.blueGrey.shade50;
+    }
+  }
+
+  Color _sideFg(String side) {
+    switch (side) {
+      case 'buy':
+        return Colors.green.shade800;
+      case 'sell':
+        return Colors.red.shade800;
+      default:
+        return Colors.blueGrey.shade600;
+    }
+  }
+
+  Color? _rowBg(String side, {required bool emphasized}) {
+    if (!emphasized) return null;
+    switch (side) {
+      case 'buy':
+        return Colors.green.shade50;
+      case 'sell':
+        return Colors.red.shade50;
+      default:
+        return null;
+    }
+  }
+
+  void _openChart(AnalysisItem s) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => SymbolChartScreen(
+          symbolId: s.symbolId,
+          title: s.displayName,
+        ),
+      ),
+    );
+  }
+
+  Widget _sectionHeader(BuildContext context, String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+      ),
+    );
+  }
+
+  Widget _stanceChip(AppLocalizations l10n, String side) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: _sideBg(side),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        _sideLabel(l10n, side),
+        style: TextStyle(
+          color: _sideFg(side),
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
+  Widget _analysisTile({
+    required BuildContext context,
+    required AppLocalizations l10n,
+    required AnalysisItem s,
+    required DateFormat fmt,
+    required NumberFormat scoreFmt,
+    required bool emphasized,
+  }) {
+    final isAction = s.side == 'buy' || s.side == 'sell';
+    return Material(
+      color: _rowBg(s.side, emphasized: emphasized && isAction),
+      child: ListTile(
+        leading: SizedBox(
+          width: 52,
+          child: Center(child: _stanceChip(l10n, s.side)),
+        ),
+        title: Text(
+          '${s.displayName} (${s.ticker})',
+          style: TextStyle(
+            fontWeight: emphasized && isAction ? FontWeight.w700 : FontWeight.w500,
+          ),
+        ),
+        subtitle: Text(
+          '${l10n.scoreLabel} ${scoreFmt.format(s.combinedScore)}\n${s.rationale}',
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+        ),
+        isThreeLine: true,
+        trailing: Text(
+          fmt.format(s.analyzedAt.toLocal()),
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        onTap: () => _openChart(s),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final fmt = DateFormat('MM/dd HH:mm');
+    final scoreFmt = NumberFormat('+0.00;-0.00');
 
     return RefreshIndicator(
       onRefresh: () async {
-        final next = ApiService.shared.fetchSignals();
+        final next = ApiService.shared.fetchLatestAnalyses();
         setState(() {
           _future = next;
         });
         await next;
       },
-      child: FutureBuilder<List<SignalItem>>(
+      child: FutureBuilder<List<AnalysisItem>>(
         future: _future,
         builder: (context, snap) {
           if (snap.connectionState != ConnectionState.done) {
             return ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
               children: [
                 SizedBox(
                   height: MediaQuery.sizeOf(context).height * 0.4,
@@ -56,6 +176,7 @@ class _SignalsScreenState extends State<SignalsScreen> {
           }
           if (snap.hasError) {
             return ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
               children: [
                 Padding(
                   padding: const EdgeInsets.all(24),
@@ -67,6 +188,7 @@ class _SignalsScreenState extends State<SignalsScreen> {
           final items = snap.data ?? [];
           if (items.isEmpty) {
             return ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
               children: [
                 Padding(
                   padding: const EdgeInsets.all(24),
@@ -75,53 +197,56 @@ class _SignalsScreenState extends State<SignalsScreen> {
               ],
             );
           }
-          return ListView.separated(
-            itemCount: items.length,
-            separatorBuilder: (_, index) => const Divider(height: 1),
-            itemBuilder: (context, i) {
-              final s = items[i];
-              final locked = !_canView(s);
-              final isBuy = s.side == 'buy';
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: isBuy
-                      ? Colors.green.shade100
-                      : Colors.red.shade100,
+
+          final picks = items
+              .where((s) => s.side == 'buy' || s.side == 'sell')
+              .toList();
+          final all = [...items]..sort((a, b) {
+              const order = {'buy': 0, 'sell': 1, 'hold': 2};
+              final bySide =
+                  (order[a.side] ?? 3).compareTo(order[b.side] ?? 3);
+              if (bySide != 0) return bySide;
+              return a.displayName.compareTo(b.displayName);
+            });
+
+          return ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: [
+              _sectionHeader(context, l10n.recommendSection),
+              if (picks.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                   child: Text(
-                    isBuy ? l10n.buy : l10n.sell,
-                    style: TextStyle(
-                      color: isBuy ? Colors.green.shade800 : Colors.red.shade800,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    l10n.noRecommendations,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                  ),
+                )
+              else
+                ...picks.map(
+                  (s) => _analysisTile(
+                    context: context,
+                    l10n: l10n,
+                    s: s,
+                    fmt: fmt,
+                    scoreFmt: scoreFmt,
+                    emphasized: true,
                   ),
                 ),
-                title: Text(
-                  '${s.displayName ?? s.ticker ?? s.symbolId} · ${s.price}',
+              const Divider(height: 24),
+              _sectionHeader(context, l10n.allSymbolsSection),
+              ...all.map(
+                (s) => _analysisTile(
+                  context: context,
+                  l10n: l10n,
+                  s: s,
+                  fmt: fmt,
+                  scoreFmt: scoreFmt,
+                  emphasized: false,
                 ),
-                subtitle: Text(
-                  locked ? l10n.proLocked : s.rationale,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                trailing: Text(
-                  fmt.format(s.createdAt.toLocal()),
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                onTap: locked
-                    ? null
-                    : () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => SymbolChartScreen(
-                              symbolId: s.symbolId,
-                              title: s.displayName ?? s.ticker ?? '',
-                            ),
-                          ),
-                        );
-                      },
-              );
-            },
+              ),
+            ],
           );
         },
       ),

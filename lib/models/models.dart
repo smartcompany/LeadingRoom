@@ -77,6 +77,54 @@ class SignalItem {
   }
 }
 
+class AnalysisItem {
+  AnalysisItem({
+    required this.id,
+    required this.symbolId,
+    required this.ticker,
+    required this.displayName,
+    required this.marketId,
+    required this.side,
+    required this.combinedScore,
+    required this.rationale,
+    required this.analyzedAt,
+    this.techScore,
+    this.qualScore,
+  });
+
+  final int id;
+  final String symbolId;
+  final String ticker;
+  final String displayName;
+  final String marketId;
+  final String side;
+  final double combinedScore;
+  final double? techScore;
+  final double? qualScore;
+  final String rationale;
+  final DateTime analyzedAt;
+
+  factory AnalysisItem.fromJson(Map<String, dynamic> json) {
+    return AnalysisItem(
+      id: (json['id'] as num).toInt(),
+      symbolId: json['symbolId'] as String,
+      ticker: json['ticker'] as String,
+      displayName: json['displayName'] as String,
+      marketId: json['marketId'] as String,
+      side: json['side'] as String,
+      combinedScore: (json['combinedScore'] as num).toDouble(),
+      techScore: json['techScore'] == null
+          ? null
+          : (json['techScore'] as num).toDouble(),
+      qualScore: json['qualScore'] == null
+          ? null
+          : (json['qualScore'] as num).toDouble(),
+      rationale: json['rationale'] as String,
+      analyzedAt: DateTime.parse(json['analyzedAt'] as String),
+    );
+  }
+}
+
 class CandlePoint {
   CandlePoint({
     required this.time,
@@ -112,21 +160,143 @@ class PaperTradeMarker {
     required this.price,
     required this.executedAt,
     this.pnlPct,
+    this.rationale,
+    this.stopHintPct,
+    this.techScore,
+    this.combinedScore,
+    this.forcedSell = false,
+    this.scoreLines = const [],
   });
 
   final String side;
   final double price;
   final DateTime executedAt;
   final double? pnlPct;
+  final String? rationale;
+  final double? stopHintPct;
+  final double? techScore;
+  final double? combinedScore;
+  final bool forcedSell;
+  final List<ScoreLineItem> scoreLines;
 
   factory PaperTradeMarker.fromJson(Map<String, dynamic> json) {
+    final linesRaw = json['scoreLines'] as List<dynamic>?;
     return PaperTradeMarker(
       side: json['side'] as String,
       price: (json['price'] as num).toDouble(),
-      executedAt: DateTime.parse(json['executed_at'] as String),
-      pnlPct: json['pnl_pct'] == null
+      executedAt: DateTime.parse(
+        (json['executedAt'] ?? json['executed_at']) as String,
+      ),
+      pnlPct: json['pnlPct'] == null && json['pnl_pct'] == null
           ? null
-          : (json['pnl_pct'] as num).toDouble(),
+          : ((json['pnlPct'] ?? json['pnl_pct']) as num).toDouble(),
+      rationale: json['rationale'] as String?,
+      stopHintPct: json['stopHintPct'] == null && json['stop_hint_pct'] == null
+          ? null
+          : ((json['stopHintPct'] ?? json['stop_hint_pct']) as num).toDouble(),
+      techScore: json['techScore'] == null
+          ? null
+          : (json['techScore'] as num).toDouble(),
+      combinedScore: json['combinedScore'] == null
+          ? null
+          : (json['combinedScore'] as num).toDouble(),
+      forcedSell: json['forcedSell'] as bool? ?? false,
+      scoreLines: linesRaw == null
+          ? const []
+          : linesRaw
+              .cast<Map<String, dynamic>>()
+              .map(ScoreLineItem.fromJson)
+              .toList(),
+    );
+  }
+}
+
+class ScoreLineItem {
+  ScoreLineItem({
+    required this.key,
+    required this.label,
+    required this.condition,
+    required this.points,
+    required this.active,
+  });
+
+  final String key;
+  final String label;
+  final String condition;
+  final double points;
+  final bool active;
+
+  factory ScoreLineItem.fromJson(Map<String, dynamic> json) {
+    return ScoreLineItem(
+      key: json['key'] as String? ?? '',
+      label: json['label'] as String? ?? '',
+      condition: json['condition'] as String? ?? '',
+      points: (json['points'] as num?)?.toDouble() ?? 0,
+      active: json['active'] as bool? ?? false,
+    );
+  }
+}
+
+class BacktestSummary {
+  BacktestSummary({
+    required this.barCount,
+    required this.tradeCount,
+    required this.closedCount,
+    required this.totalReturnPct,
+    required this.open,
+    this.winRate,
+    this.avgPnlPct,
+    this.unrealizedPnlPct,
+  });
+
+  final int barCount;
+  final int tradeCount;
+  final int closedCount;
+  final double? winRate;
+  final double? avgPnlPct;
+  final double totalReturnPct;
+  final double? unrealizedPnlPct;
+  final bool open;
+
+  factory BacktestSummary.fromJson(Map<String, dynamic> json) {
+    return BacktestSummary(
+      barCount: json['barCount'] as int,
+      tradeCount: json['tradeCount'] as int,
+      closedCount: json['closedCount'] as int,
+      winRate: json['winRate'] == null
+          ? null
+          : (json['winRate'] as num).toDouble(),
+      avgPnlPct: json['avgPnlPct'] == null
+          ? null
+          : (json['avgPnlPct'] as num).toDouble(),
+      totalReturnPct: (json['totalReturnPct'] as num).toDouble(),
+      unrealizedPnlPct: json['unrealizedPnlPct'] == null
+          ? null
+          : (json['unrealizedPnlPct'] as num).toDouble(),
+      open: json['open'] as bool? ?? false,
+    );
+  }
+}
+
+class BacktestResult {
+  BacktestResult({
+    required this.summary,
+    required this.trades,
+  });
+
+  final BacktestSummary summary;
+  final List<PaperTradeMarker> trades;
+
+  factory BacktestResult.fromJson(Map<String, dynamic> json) {
+    final list = json['trades'] as List<dynamic>? ?? [];
+    return BacktestResult(
+      summary: BacktestSummary.fromJson(
+        json['summary'] as Map<String, dynamic>,
+      ),
+      trades: list
+          .cast<Map<String, dynamic>>()
+          .map(PaperTradeMarker.fromJson)
+          .toList(),
     );
   }
 }
