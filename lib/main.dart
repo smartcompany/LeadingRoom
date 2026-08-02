@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:leading_room/config/app_config.dart';
 import 'package:leading_room/l10n/app_localizations.dart';
@@ -8,7 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: '.env');
+  await AppConfig.shared.loadFromServer();
   await Supabase.initialize(
     url: AppConfig.shared.supabaseUrl,
     publishableKey: AppConfig.shared.supabasePublishableKey,

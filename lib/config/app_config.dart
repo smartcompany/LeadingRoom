@@ -1,30 +1,46 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
 
 class AppConfig {
   AppConfig._();
   static final AppConfig shared = AppConfig._();
 
+  /// 서버만 호출 — 로컬 .env 없음.
+  static const apiBaseUrl = 'https://leading-room-server-ybtk.vercel.app';
+
+  String? _supabaseUrl;
+  String? _supabasePublishableKey;
+
   String get supabaseUrl {
-    final v = dotenv.env['SUPABASE_URL'];
+    final v = _supabaseUrl;
     if (v == null || v.isEmpty) {
-      throw StateError('SUPABASE_URL missing in .env');
+      throw StateError('AppConfig not loaded. Call loadFromServer() first.');
     }
     return v;
   }
 
   String get supabasePublishableKey {
-    final v = dotenv.env['SUPABASE_PUBLISHABLE_KEY'];
+    final v = _supabasePublishableKey;
     if (v == null || v.isEmpty) {
-      throw StateError('SUPABASE_PUBLISHABLE_KEY missing in .env');
+      throw StateError('AppConfig not loaded. Call loadFromServer() first.');
     }
     return v;
   }
 
-  String get apiBaseUrl {
-    final v = dotenv.env['API_BASE_URL'];
-    if (v == null || v.isEmpty) {
-      throw StateError('API_BASE_URL missing in .env');
+  Future<void> loadFromServer() async {
+    final uri = Uri.parse('$apiBaseUrl/api/config');
+    final res = await http.get(uri);
+    if (res.statusCode != 200) {
+      throw StateError('config failed: ${res.statusCode}');
     }
-    return v;
+    final body = jsonDecode(res.body) as Map<String, dynamic>;
+    final url = body['supabaseUrl'] as String?;
+    final key = body['supabasePublishableKey'] as String?;
+    if (url == null || url.isEmpty || key == null || key.isEmpty) {
+      throw StateError('config missing supabase fields');
+    }
+    _supabaseUrl = url;
+    _supabasePublishableKey = key;
   }
 }

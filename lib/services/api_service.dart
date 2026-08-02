@@ -9,7 +9,7 @@ class ApiService {
   static final ApiService shared = ApiService._();
 
   Uri _uri(String path, [Map<String, String>? query]) {
-    final base = AppConfig.shared.apiBaseUrl;
+    final base = AppConfig.apiBaseUrl;
     return Uri.parse('$base$path').replace(queryParameters: query);
   }
 
