@@ -7,7 +7,7 @@ class AppConfig {
   static final AppConfig shared = AppConfig._();
 
   /// 서버만 호출 — 로컬 .env 없음.
-  static const apiBaseUrl = 'https://leading-room-server-ybtk.vercel.app';
+  static const apiBaseUrl = 'https://leading-room-server.vercel.app';
 
   String? _supabaseUrl;
   String? _supabasePublishableKey;
