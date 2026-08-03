@@ -66,7 +66,13 @@ class _PriceChartState extends State<PriceChart> {
   var _disposed = false;
   var _indReady = false;
 
-  bool get _showMa => _indStore.showMa;
+  bool get _showMa20 => _indStore.showMa20;
+  bool get _showMa50 => _indStore.showMa50;
+  bool get _showEma9 => _indStore.showEma9;
+  bool get _showEma12 => _indStore.showEma12;
+  bool get _showEma26 => _indStore.showEma26;
+  bool get _anyMa => _indStore.anyMa;
+  bool get _anyEma => _indStore.anyEma;
   bool get _showRsi => _indStore.showRsi;
   bool get _showMacd => _indStore.showMacd;
   bool get _showVolume => _indStore.showVolume;
@@ -261,18 +267,20 @@ class _PriceChartState extends State<PriceChart> {
       values.add(c.high);
       values.add(c.low);
     }
-    if (_showMa) {
-      for (final p in _indicators.ma20) {
-        if (p.value == null) continue;
-        if (!ChartVisibleYRange.inWindow(p.time, from, to)) continue;
-        values.add(p.value!);
-      }
-      for (final p in _indicators.ma50) {
+    void addLine(List<TimedValue> line, bool enabled) {
+      if (!enabled) return;
+      for (final p in line) {
         if (p.value == null) continue;
         if (!ChartVisibleYRange.inWindow(p.time, from, to)) continue;
         values.add(p.value!);
       }
     }
+
+    addLine(_indicators.ma20, _showMa20);
+    addLine(_indicators.ma50, _showMa50);
+    addLine(_indicators.ema9, _showEma9);
+    addLine(_indicators.ema12, _showEma12);
+    addLine(_indicators.ema26, _showEma26);
     final range = ChartVisibleYRange.fromValues(values, padFraction: 0.02);
     if (range == null) return;
     if (range.min == _yMin && range.max == _yMax) {
@@ -348,23 +356,100 @@ class _PriceChartState extends State<PriceChart> {
     );
   }
 
+  void _refitYIfNeeded() {
+    final from = _lastFitFrom;
+    final to = _lastFitTo;
+    if (from != null && to != null) _applyYAxisFit(from, to);
+  }
+
+  Widget _linePickerChip({
+    required String label,
+    required bool selected,
+    required List<
+            ({
+              String label,
+              bool Function() get,
+              Future<void> Function(bool) set
+            })>
+        lines,
+  }) {
+    return MenuAnchor(
+      alignmentOffset: const Offset(0, 4),
+      builder: (context, controller, _) {
+        return FilterChip(
+          label: Text(label),
+          selected: selected,
+          onSelected: (_) {
+            if (controller.isOpen) {
+              controller.close();
+            } else {
+              controller.open();
+            }
+          },
+          visualDensity: VisualDensity.compact,
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        );
+      },
+      menuChildren: [
+        for (final line in lines)
+          CheckboxMenuButton(
+            value: line.get(),
+            onChanged: (v) async {
+              if (v == null) return;
+              await line.set(v);
+              if (!mounted) return;
+              setState(() {});
+              _refitYIfNeeded();
+            },
+            child: Text(line.label),
+          ),
+      ],
+    );
+  }
+
   Widget _indicatorToggles(AppLocalizations l10n) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
       child: Row(
         children: [
-          _toggleChip(
+          _linePickerChip(
             label: l10n.indicatorMa,
-            selected: _showMa,
-            onSelected: (v) async {
-              await _indStore.setMa(v);
-              if (!mounted) return;
-              setState(() {});
-              final from = _lastFitFrom;
-              final to = _lastFitTo;
-              if (from != null && to != null) _applyYAxisFit(from, to);
-            },
+            selected: _anyMa,
+            lines: [
+              (
+                label: l10n.indicatorMa20,
+                get: () => _indStore.showMa20,
+                set: _indStore.setMa20,
+              ),
+              (
+                label: l10n.indicatorMa50,
+                get: () => _indStore.showMa50,
+                set: _indStore.setMa50,
+              ),
+            ],
+          ),
+          const SizedBox(width: 6),
+          _linePickerChip(
+            label: l10n.indicatorEma,
+            selected: _anyEma,
+            lines: [
+              (
+                label: l10n.indicatorEma9,
+                get: () => _indStore.showEma9,
+                set: _indStore.setEma9,
+              ),
+              (
+                label: l10n.indicatorEma12,
+                get: () => _indStore.showEma12,
+                set: _indStore.setEma12,
+              ),
+              (
+                label: l10n.indicatorEma26,
+                get: () => _indStore.showEma26,
+                set: _indStore.setEma26,
+              ),
+            ],
           ),
           const SizedBox(width: 6),
           _toggleChip(
@@ -438,7 +523,7 @@ class _PriceChartState extends State<PriceChart> {
           mode: EmptyPointMode.gap,
         ),
       ),
-      if (_showMa)
+      if (_showMa20)
         LineSeries<TimedValue, DateTime>(
           dataSource: _indicators.ma20,
           xValueMapper: (p, _) => p.time,
@@ -451,7 +536,7 @@ class _PriceChartState extends State<PriceChart> {
             mode: EmptyPointMode.gap,
           ),
         ),
-      if (_showMa)
+      if (_showMa50)
         LineSeries<TimedValue, DateTime>(
           dataSource: _indicators.ma50,
           xValueMapper: (p, _) => p.time,
@@ -459,6 +544,45 @@ class _PriceChartState extends State<PriceChart> {
           color: Colors.indigo.shade400,
           width: 1.2,
           name: 'MA50',
+          animationDuration: 0,
+          emptyPointSettings: const EmptyPointSettings(
+            mode: EmptyPointMode.gap,
+          ),
+        ),
+      if (_showEma9)
+        LineSeries<TimedValue, DateTime>(
+          dataSource: _indicators.ema9,
+          xValueMapper: (p, _) => p.time,
+          yValueMapper: (p, _) => p.value,
+          color: Colors.cyan.shade700,
+          width: 1.2,
+          name: 'EMA9',
+          animationDuration: 0,
+          emptyPointSettings: const EmptyPointSettings(
+            mode: EmptyPointMode.gap,
+          ),
+        ),
+      if (_showEma12)
+        LineSeries<TimedValue, DateTime>(
+          dataSource: _indicators.ema12,
+          xValueMapper: (p, _) => p.time,
+          yValueMapper: (p, _) => p.value,
+          color: Colors.teal.shade600,
+          width: 1.2,
+          name: 'EMA12',
+          animationDuration: 0,
+          emptyPointSettings: const EmptyPointSettings(
+            mode: EmptyPointMode.gap,
+          ),
+        ),
+      if (_showEma26)
+        LineSeries<TimedValue, DateTime>(
+          dataSource: _indicators.ema26,
+          xValueMapper: (p, _) => p.time,
+          yValueMapper: (p, _) => p.value,
+          color: Colors.purple.shade400,
+          width: 1.2,
+          name: 'EMA26',
           animationDuration: 0,
           emptyPointSettings: const EmptyPointSettings(
             mode: EmptyPointMode.gap,

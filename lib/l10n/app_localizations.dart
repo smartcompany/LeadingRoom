@@ -422,6 +422,42 @@ abstract class AppLocalizations {
   /// **'이평'**
   String get indicatorMa;
 
+  /// No description provided for @indicatorEma.
+  ///
+  /// In ko, this message translates to:
+  /// **'EMA'**
+  String get indicatorEma;
+
+  /// No description provided for @indicatorMa20.
+  ///
+  /// In ko, this message translates to:
+  /// **'MA20'**
+  String get indicatorMa20;
+
+  /// No description provided for @indicatorMa50.
+  ///
+  /// In ko, this message translates to:
+  /// **'MA50'**
+  String get indicatorMa50;
+
+  /// No description provided for @indicatorEma9.
+  ///
+  /// In ko, this message translates to:
+  /// **'EMA9'**
+  String get indicatorEma9;
+
+  /// No description provided for @indicatorEma12.
+  ///
+  /// In ko, this message translates to:
+  /// **'EMA12'**
+  String get indicatorEma12;
+
+  /// No description provided for @indicatorEma26.
+  ///
+  /// In ko, this message translates to:
+  /// **'EMA26'**
+  String get indicatorEma26;
+
   /// No description provided for @indicatorRsi.
   ///
   /// In ko, this message translates to:

@@ -173,6 +173,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get indicatorMa => 'MA';
 
   @override
+  String get indicatorEma => 'EMA';
+
+  @override
+  String get indicatorMa20 => 'MA20';
+
+  @override
+  String get indicatorMa50 => 'MA50';
+
+  @override
+  String get indicatorEma9 => 'EMA9';
+
+  @override
+  String get indicatorEma12 => 'EMA12';
+
+  @override
+  String get indicatorEma26 => 'EMA26';
+
+  @override
   String get indicatorRsi => 'RSI';
 
   @override

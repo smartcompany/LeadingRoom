@@ -23,10 +23,22 @@ class MacdPoint {
 
 /// 서버 `technical.ts`와 동일한 규칙으로 차트용 지표 시계열 생성.
 class ChartIndicators {
-  ChartIndicators._(this.ma20, this.ma50, this.rsi, this.macd, this.volume);
+  ChartIndicators._(
+    this.ma20,
+    this.ma50,
+    this.ema9,
+    this.ema12,
+    this.ema26,
+    this.rsi,
+    this.macd,
+    this.volume,
+  );
 
   final List<TimedValue> ma20;
   final List<TimedValue> ma50;
+  final List<TimedValue> ema9;
+  final List<TimedValue> ema12;
+  final List<TimedValue> ema26;
   final List<TimedValue> rsi;
   final List<MacdPoint> macd;
   final List<TimedValue> volume;
@@ -36,22 +48,24 @@ class ChartIndicators {
     final volumes = candles.map((c) => c.volume).toList();
     final ma20Raw = _smaSeries(closes, 20);
     final ma50Raw = _smaSeries(closes, 50);
+    final ema9Raw = _emaSeries(closes, 9);
+    final ema12Raw = _emaSeries(closes, 12);
+    final ema26Raw = _emaSeries(closes, 26);
     final rsiRaw = _rsiSeries(closes, 14);
     final macdRaw = _macdSeries(closes);
 
+    List<TimedValue> timed(List<double?> raw) => [
+          for (var i = 0; i < candles.length; i++)
+            TimedValue(time: candles[i].time, value: raw[i]),
+        ];
+
     return ChartIndicators._(
-      [
-        for (var i = 0; i < candles.length; i++)
-          TimedValue(time: candles[i].time, value: ma20Raw[i]),
-      ],
-      [
-        for (var i = 0; i < candles.length; i++)
-          TimedValue(time: candles[i].time, value: ma50Raw[i]),
-      ],
-      [
-        for (var i = 0; i < candles.length; i++)
-          TimedValue(time: candles[i].time, value: rsiRaw[i]),
-      ],
+      timed(ma20Raw),
+      timed(ma50Raw),
+      timed(ema9Raw),
+      timed(ema12Raw),
+      timed(ema26Raw),
+      timed(rsiRaw),
       [
         for (var i = 0; i < candles.length; i++)
           MacdPoint(
